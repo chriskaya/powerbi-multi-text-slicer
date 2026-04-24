@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and release .pbiviz
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build .pbiviz
+        run: npx pbiviz package --no-stats
+
+      - name: Read visual version
+        id: meta
+        run: |
+          version=$(node -p "require('./pbiviz.json').visual.version")
+          name=$(node -p "require('./pbiviz.json').visual.displayName")
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "name=${name}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether the release already exists
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "${{ steps.meta.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            --title "${{ steps.meta.outputs.name }} ${{ steps.meta.outputs.tag }}" \
+            --target "${{ github.sha }}" \
+            --notes "Automated release built from ${{ github.sha }}." \
+            dist/*.pbiviz
+
+      - name: Skip — release already exists
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          echo "Release ${{ steps.meta.outputs.tag }} already exists; nothing to do."
+          echo "Bump the \"version\" field in pbiviz.json to publish a new release."

@@ -1,0 +1,25 @@
+{
+    "visual": {
+        "name": "multiTextSlicer",
+        "displayName": "Multi Text Slicer",
+        "guid": "multiTextSlicer9F2A4B8C1D2E3F4A5B6C7D8E9F0A1B2C",
+        "visualClassName": "Visual",
+        "version": "1.0.0.0",
+        "description": "Filters a column using a list of values separated by a customizable delimiter (IN filter).",
+        "supportUrl": "https://github.com/chriskaya/powerbi-multi-text-slicer",
+        "gitHubUrl": "https://github.com/chriskaya/powerbi-multi-text-slicer"
+    },
+    "apiVersion": "5.11.0",
+    "author": {
+        "name": "chriskaya",
+        "email": "chriskaya@users.noreply.github.com"
+    },
+    "assets": {
+        "icon": "assets/icon.png"
+    },
+    "externalJS": [],
+    "style": "style/visual.less",
+    "capabilities": "capabilities.json",
+    "dependencies": null,
+    "stringResources": []
+}
