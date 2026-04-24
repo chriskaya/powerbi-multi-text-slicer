@@ -1,0 +1,8 @@
+node_modules/
+.tmp/
+dist/
+*.pbiviz
+*.log
+.vscode/
+.idea/
+.DS_Store

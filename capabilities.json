@@ -1,0 +1,60 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Column",
+            "description": "Column to filter. Values pasted in the textbox are matched against this column using an IN filter.",
+            "name": "column",
+            "kind": "Grouping"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "column": { "min": 0, "max": 1 }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "for": { "in": "column" },
+                    "dataReductionAlgorithm": { "top": { "count": 1 } }
+                }
+            }
+        }
+    ],
+    "objects": {
+        "general": {
+            "properties": {
+                "filter": {
+                    "type": { "filter": {} }
+                }
+            }
+        },
+        "textSettings": {
+            "properties": {
+                "separator": {
+                    "type": { "text": true }
+                },
+                "placeholder": {
+                    "type": { "text": true }
+                }
+            }
+        },
+        "appearance": {
+            "properties": {
+                "fontSize": {
+                    "type": { "numeric": true }
+                },
+                "fontColor": {
+                    "type": { "fill": { "solid": { "color": true } } }
+                },
+                "backgroundColor": {
+                    "type": { "fill": { "solid": { "color": true } } }
+                }
+            }
+        }
+    },
+    "supportsLandingPage": false,
+    "supportsMultiVisualSelection": false,
+    "privileges": []
+}
