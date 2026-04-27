@@ -19,6 +19,9 @@ ignored; if no non-empty value remains, the filter is cleared.
   back the persisted filter values.
 - Customisable separator and placeholder (format pane).
 - Customisable font size, font colour and background colour.
+- The textbox can be resized with the mouse (drag the bottom-right
+  handle); the chosen size is saved with the report and survives tab
+  switches.
 
 ## Install in Power BI Desktop
 

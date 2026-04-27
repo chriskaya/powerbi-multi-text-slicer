@@ -15,6 +15,14 @@ import { VisualFormattingSettingsModel } from "./settings";
 
 const FILTER_OBJECT_NAME = "general";
 const FILTER_PROPERTY_NAME = "filter";
+const LAYOUT_OBJECT_NAME = "layout";
+const LAYOUT_WIDTH_PROPERTY = "textareaWidth";
+const LAYOUT_HEIGHT_PROPERTY = "textareaHeight";
+
+interface PersistedSize {
+    width: number;
+    height: number;
+}
 
 export class Visual implements IVisual {
     private readonly host: IVisualHost;
@@ -28,6 +36,9 @@ export class Visual implements IVisual {
     private filterTarget: IFilterColumnTarget | null = null;
     private separator: string = ",";
     private restoredFromState: boolean = false;
+
+    private persistedSize: PersistedSize | null = null;
+    private resizeStartSize: PersistedSize | null = null;
 
     constructor(options?: VisualConstructorOptions) {
         if (!options) {
@@ -51,6 +62,9 @@ export class Visual implements IVisual {
         this.root.appendChild(this.status);
 
         this.textarea.addEventListener("input", () => this.applyFilter());
+        this.textarea.addEventListener("pointerdown", () => this.onPointerDown());
+        this.textarea.addEventListener("pointerup", () => this.onPointerUp());
+        this.textarea.addEventListener("pointercancel", () => { this.resizeStartSize = null; });
     }
 
     public update(options: VisualUpdateOptions): void {
@@ -68,6 +82,7 @@ export class Visual implements IVisual {
         this.applyAppearance();
         this.updateFilterTarget(dataView);
         this.restoreStateOnce(dataView);
+        this.restoreTextareaSize(dataView);
 
         if (previousSeparator !== this.separator) {
             // Re-apply with the new separator (the textarea content stays as the user typed it).
@@ -191,5 +206,67 @@ export class Visual implements IVisual {
         this.status.textContent = count === 0
             ? "Filter disabled (no values)"
             : `Filtering on ${count} value${count > 1 ? "s" : ""}`;
+    }
+
+    private onPointerDown(): void {
+        this.resizeStartSize = {
+            width: this.textarea.offsetWidth,
+            height: this.textarea.offsetHeight
+        };
+    }
+
+    private onPointerUp(): void {
+        if (!this.resizeStartSize) {
+            return;
+        }
+        const before = this.resizeStartSize;
+        this.resizeStartSize = null;
+
+        const width = this.textarea.offsetWidth;
+        const height = this.textarea.offsetHeight;
+        if (width === before.width && height === before.height) {
+            return;
+        }
+
+        this.persistedSize = { width, height };
+        this.applyTextareaSize();
+        this.host.persistProperties({
+            merge: [
+                {
+                    objectName: LAYOUT_OBJECT_NAME,
+                    selector: null as unknown as powerbi.data.Selector,
+                    properties: {
+                        [LAYOUT_WIDTH_PROPERTY]: width,
+                        [LAYOUT_HEIGHT_PROPERTY]: height
+                    }
+                }
+            ]
+        });
+    }
+
+    private restoreTextareaSize(dataView: DataView | undefined): void {
+        const objects = dataView && dataView.metadata && dataView.metadata.objects;
+        const layout = objects && (objects as any)[LAYOUT_OBJECT_NAME];
+        if (!layout) {
+            return;
+        }
+        const width = Number(layout[LAYOUT_WIDTH_PROPERTY]);
+        const height = Number(layout[LAYOUT_HEIGHT_PROPERTY]);
+        if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) {
+            return;
+        }
+        this.persistedSize = { width, height };
+        this.applyTextareaSize();
+    }
+
+    private applyTextareaSize(): void {
+        if (!this.persistedSize) {
+            return;
+        }
+        // Pin the textarea to its persisted size and opt out of flex grow/shrink so
+        // the inline width/height aren't fought over by the parent flex layout.
+        this.textarea.style.flex = "0 0 auto";
+        this.textarea.style.width = `${this.persistedSize.width}px`;
+        this.textarea.style.height = `${this.persistedSize.height}px`;
     }
 }
