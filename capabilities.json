@@ -52,6 +52,16 @@
                     "type": { "fill": { "solid": { "color": true } } }
                 }
             }
+        },
+        "layout": {
+            "properties": {
+                "textareaWidth": {
+                    "type": { "numeric": true }
+                },
+                "textareaHeight": {
+                    "type": { "numeric": true }
+                }
+            }
         }
     },
     "supportsLandingPage": false,
