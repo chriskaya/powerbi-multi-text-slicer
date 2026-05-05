@@ -28,7 +28,9 @@ export class Visual implements IVisual {
     private readonly host: IVisualHost;
     private readonly root: HTMLElement;
     private readonly textarea: HTMLTextAreaElement;
+    private readonly footer: HTMLDivElement;
     private readonly status: HTMLDivElement;
+    private readonly clearButton: HTMLButtonElement;
 
     private readonly formattingSettingsService: FormattingSettingsService;
     private formattingSettings: VisualFormattingSettingsModel;
@@ -57,14 +59,30 @@ export class Visual implements IVisual {
         this.textarea.autocomplete = "off";
         this.root.appendChild(this.textarea);
 
+        this.footer = document.createElement("div");
+        this.footer.classList.add("multi-text-slicer__footer");
+        this.root.appendChild(this.footer);
+
         this.status = document.createElement("div");
         this.status.classList.add("multi-text-slicer__status");
-        this.root.appendChild(this.status);
+        this.footer.appendChild(this.status);
 
-        this.textarea.addEventListener("input", () => this.applyFilter());
+        this.clearButton = document.createElement("button");
+        this.clearButton.type = "button";
+        this.clearButton.classList.add("multi-text-slicer__clear");
+        this.clearButton.textContent = "Clear";
+        this.clearButton.title = "Clear all values";
+        this.clearButton.setAttribute("aria-label", "Clear all values");
+        this.footer.appendChild(this.clearButton);
+
+        this.textarea.addEventListener("input", () => {
+            this.applyFilter();
+            this.refreshClearButton();
+        });
         this.textarea.addEventListener("pointerdown", () => this.onPointerDown());
         this.textarea.addEventListener("pointerup", () => this.onPointerUp());
         this.textarea.addEventListener("pointercancel", () => { this.resizeStartSize = null; });
+        this.clearButton.addEventListener("click", () => this.clearAll());
     }
 
     public update(options: VisualUpdateOptions): void {
@@ -90,6 +108,7 @@ export class Visual implements IVisual {
         }
 
         this.refreshStatus();
+        this.refreshClearButton();
     }
 
     public getFormattingModel(): powerbi.visuals.FormattingModel {
@@ -192,6 +211,20 @@ export class Visual implements IVisual {
             FilterAction.merge
         );
         this.refreshStatus();
+    }
+
+    private clearAll(): void {
+        if (this.textarea.value.length === 0) {
+            return;
+        }
+        this.textarea.value = "";
+        this.applyFilter();
+        this.refreshClearButton();
+        this.textarea.focus();
+    }
+
+    private refreshClearButton(): void {
+        this.clearButton.disabled = this.textarea.value.length === 0;
     }
 
     private refreshStatus(): void {

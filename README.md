@@ -15,6 +15,8 @@ ignored; if no non-empty value remains, the filter is cleared.
 - A Basic `IN` filter is pushed to Power BI through the sandboxed
   `applyJsonFilter` API.
 - Clearing the textbox (or leaving only empty entries) disables the filter.
+- A **Clear** button below the textbox empties it and removes the filter
+  in one click.
 - The textbox content is restored when the report is reopened, by reading
   back the persisted filter values.
 - Customisable separator and placeholder (format pane).
