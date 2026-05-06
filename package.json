@@ -7,7 +7,8 @@
         "pbiviz": "pbiviz",
         "start": "pbiviz start",
         "package": "pbiviz package",
-        "lint": "eslint src --ext .ts"
+        "lint": "eslint src --ext .ts",
+        "security-check": "node scripts/security-check.mjs"
     },
     "dependencies": {
         "powerbi-models": "1.15.2",
