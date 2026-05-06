@@ -1,5 +1,7 @@
 "use strict";
 
+import "../style/visual.less";
+
 import powerbi from "powerbi-visuals-api";
 import { BasicFilter, IFilterColumnTarget, IFilter } from "powerbi-models";
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
