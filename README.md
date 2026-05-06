@@ -109,6 +109,30 @@ requirements](https://learn.microsoft.com/power-bi/developer/visuals/develop-pow
 - **No telemetry.** The visual does not log, collect, or transmit user
   input.
 
+### Automated security gate
+
+Every push to `main` runs `scripts/security-check.mjs` **before** the
+`.pbiviz` is built. The script scans `src/` and `style/` and fails the
+workflow on any of:
+
+- forbidden APIs (`eval`, `Function` constructor, `innerHTML`,
+  `outerHTML`, `insertAdjacentHTML`, `document.write`, `fetch`,
+  `XMLHttpRequest`, `WebSocket`, `EventSource`, `sendBeacon`,
+  `navigator.clipboard`, `localStorage`, `sessionStorage`, `indexedDB`,
+  `postMessage`, dynamic `import()`, string-form
+  `setTimeout`/`setInterval`, `Worker`, `createObjectURL`, `new
+  Image()`),
+- any URL string literal (`http://`, `https://`, `ws://`, `wss://`,
+  `ftp://`, `file://`, `data://`),
+- `capabilities.json` declaring any `privileges` entry,
+- `pbiviz.json` declaring `externalJS` scripts,
+- a runtime dependency that is not a Microsoft `powerbi-*` package.
+
+A second step runs `npm audit --audit-level=high --omit=dev` against
+production dependencies. If either step fails, the workflow stops and
+**no release is created**. Run the same check locally with
+`npm run security-check`.
+
 If you find a security issue, please open a private report on the
 [repository issues page](../../issues).
 

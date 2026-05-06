@@ -25,6 +25,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Security gate (no malicious code, no exfiltration)
+        # Scans src/ and style/ for forbidden APIs (eval, innerHTML, fetch,
+        # WebSocket, postMessage, storage, dynamic import, …), forbids URL
+        # string literals, asserts capabilities.json privileges == [], asserts
+        # pbiviz.json declares no externalJS, and asserts every runtime
+        # dependency is a Microsoft "powerbi-*" package. Exits non-zero on any
+        # finding, which stops the workflow before a .pbiviz can be built or a
+        # release can be created.
+        run: node scripts/security-check.mjs
+
+      - name: npm audit (production deps, high+)
+        run: npm audit --audit-level=high --omit=dev
+
       - name: Build .pbiviz
         run: npx pbiviz package --no-stats
 
